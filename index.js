@@ -10,12 +10,6 @@ var app = express();
 var cors = require('cors');
 app.use(cors({ optionsSuccessStatus: 200 }));  // some legacy browsers choke on 204
 
-function checkValidDate(date) {
-  var timestamp = Date.parse(date);
-
-  return isNaN(timestamp);
-}
-
 
 // http://expressjs.com/en/starter/static-files.html
 app.use(express.static('public'));
@@ -31,33 +25,29 @@ app.get("/api/hello", function (req, res) {
   res.json({ greeting: 'hello API' });
 });
 
-app.get("/api/:date", function (req, res) {
-  const timestamp = req.params.date;
-  console.log(timestamp);
+app.get("/api/:date", function(req, res) {
+  const dateString = req.params.date;
+  let date;
 
-  // if(checkValidDate(timestamp) == false) {
-  //   res.json({error: "Invalid Date"});
-  // }
-  var dateOutput = "";
-  var unixOutput = "";
-
-  if (!timestamp.includes("-")) {
-    unixOutput = parseInt(timestamp);
-    let date = new Date(unixOutput);
-    res.json({
-      unix: unixOutput,
-      utc: date.toUTCString(),
-    });
+  if(!dateString) {
+    date = new Date();
   } else {
-    let date = new Date(timestamp);
-
-    res.json({
-      unix: date.getTime(),
-      utc: date.toUTCString()
-    })
+    if(!isNaN(dateString)) {
+      date = new Date(parseInt(dateString));
+    } else {
+      date = new Date(dateString);
+    }
   }
 
-});
+  if(date.toString() === "Invalid Date") {
+    res.json({error: date.toString()});
+  } else {
+    res.json({
+      unix: date.getTime(),
+      utc: date.toUTCString(),
+    })
+  }
+})
 
 
 
